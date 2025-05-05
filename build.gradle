@@ -1,20 +1,35 @@
 allprojects {
   group = 'com.morning.lohika.spark.ml'
   version = '1.0-SNAPSHOT'
+  
+  // Explicitly set Java compatibility for all projects
+  if (plugins.hasPlugin('java')) {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
 }
 
 subprojects {
   apply plugin: 'java'
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 
   repositories {
     jcenter()
     mavenLocal()
     mavenCentral()
-
+    
+    // Bintray is no longer available. Using alternative repositories
     maven {
-      url "http://dl.bintray.com/spark-packages/maven"
+      url "https://repos.spark-packages.org"
+    }
+    // Apache Maven Central as fallback
+    maven {
+      url "https://repo1.maven.org/maven2"
+    }
+    // Maven Central mirror
+    maven {
+      url "https://maven-central.storage-download.googleapis.com/maven2/"
     }
   }
 }
