@@ -5,22 +5,16 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.tartarus.snowball.SnowballStemmer;
 
-public class StemmingFunction implements MapFunction<Row, Row> {
+import java.io.Serializable;
 
-    private SnowballStemmer stemmer = initializeStemmer();
+public class StemmingFunction implements MapFunction<Row, Row>, Serializable {
 
-    private SnowballStemmer initializeStemmer() {
-        try {
-            Class stemClass = Class.forName("org.tartarus.snowball.ext.englishStemmer");
-
-            return (SnowballStemmer) stemClass.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
+    private static final long serialVersionUID = 1L;
+    
     @Override
     public Row call(Row input) throws Exception {
+        SnowballStemmer stemmer = initializeStemmer();
+        
         stemmer.setCurrent(input.getAs(Column.FILTERED_WORD.getName()));
         stemmer.stem();
         String stemmedWord = stemmer.getCurrent();
@@ -30,6 +24,15 @@ public class StemmingFunction implements MapFunction<Row, Row> {
                 input.getInt(input.schema().fieldIndex(Column.ROW_NUMBER.getName())),
                 input.getDouble(input.schema().fieldIndex(Column.LABEL.getName())),
                 stemmedWord);
+    }
+    
+    private SnowballStemmer initializeStemmer() {
+        try {
+            Class<?> stemClass = Class.forName("org.tartarus.snowball.ext.englishStemmer");
+            return (SnowballStemmer) stemClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
 }
